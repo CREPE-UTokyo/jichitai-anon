@@ -1,0 +1,33 @@
+name: Styler
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  style:
+    name: Styling
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v1
+      - name: Install dependencies
+        run: |
+          install.packages('remotes')
+          remotes::install_github('r-lib/styler')
+      - name: Style files
+        run: |
+          library(styler)
+          style_dir('.')
+      - name: Commit changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git commit -am "Apply styler" || echo "No changes to commit"
+          git push
