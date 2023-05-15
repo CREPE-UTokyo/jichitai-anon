@@ -1,0 +1,7 @@
+version: '3'
+services:
+  r-service:
+    build: .
+    volumes:
+      - .:/usr/src/app
+    working_dir: /usr/src/app
