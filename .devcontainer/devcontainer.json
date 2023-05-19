@@ -1,0 +1,9 @@
+{
+	"name": "R Development Container",
+	"dockerComposeFile": [
+		"../docker-compose.yaml",
+		"docker-compose.yml"
+	],
+	"service": "r-service",
+	"workspaceFolder": "/usr/src/app"
+}
