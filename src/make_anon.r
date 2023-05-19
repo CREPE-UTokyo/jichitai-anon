@@ -13,3 +13,12 @@ k_anonymize <- function(header, k, filenames) {
     write.csv(sdc@orgData, paste0("k_anonymized_", filename)) # Write result to CSV
   }
 }
+
+# Function for random sampling
+random_sampling <- function(n, filenames) {
+  for (filename in filenames) {
+    data <- read.csv(filename) # Load file
+    sampled_data <- data %>% sample_n(n) # Perform random sampling
+    write.csv(sampled_data, paste0("random_sampling_", filename)) # Write result to CSV
+  }
+}
