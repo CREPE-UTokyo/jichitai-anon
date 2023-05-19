@@ -22,3 +22,19 @@ random_sampling <- function(n, filenames) {
     write.csv(sampled_data, paste0("random_sampling_", filename)) # Write result to CSV
   }
 }
+
+# Function for top coding
+top_coding <- function(header, percentile, filenames) {
+  for (filename in filenames) {
+    data <- read.csv(filename) # Load file
+    if (!header %in% colnames(data)) stop(paste("Header", header, "not found in file", filename)) # Check header
+
+    # Calculate the threshold and mean for top coding
+    threshold <- quantile(data[[header]], probs = percentile, na.rm = TRUE)
+    top_coded_mean <- mean(data[data[[header]] > threshold, header], na.rm = TRUE)
+
+    # Perform top coding
+    data[data[[header]] > threshold, header] <- top_coded_mean
+    write.csv(data, paste0("top_coded_", filename)) # Write result to CSV
+  }
+}
