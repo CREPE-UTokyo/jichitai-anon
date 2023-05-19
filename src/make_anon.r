@@ -38,3 +38,5 @@ top_coding <- function(header, percentile, filenames) {
     write.csv(data, paste0("top_coded_", filename)) # Write result to CSV
   }
 }
+
+# test
