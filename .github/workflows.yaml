@@ -31,3 +31,4 @@ jobs:
           git config --local user.name "GitHub Action"
           git commit -am "Apply styler" || echo "No changes to commit"
           git push
+
