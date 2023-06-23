@@ -3,3 +3,4 @@ my_packages/
 .vscode/
 data/
 output/
+config/
