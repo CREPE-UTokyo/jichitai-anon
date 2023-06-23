@@ -1,1 +1,5 @@
 .idea/
+my_packages/
+.vscode/
+data/
+output/
