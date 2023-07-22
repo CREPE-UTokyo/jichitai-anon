@@ -39,7 +39,7 @@ font_add("IPAex", "/workspaces/jichitai-anon/ipaexm/ipaexm.ttf")
   file_list <- list.files(path = "data", pattern = paste0("^", filename, ".*\\.csv$"), full.names = TRUE)
 }
 
-.save_structure <- function(file, header) {
+.save_plot <- function(file, header) {
   encoding_list <- c("UTF-8", "Shift-JIS")
 
   for (encoding in encoding_list) {
@@ -164,7 +164,7 @@ main <- function() {
     file_list <- .get_files(name)
     walk(column, function(header) {
       walk(file_list, function(file) {
-        .save_structure(file, header)
+        .save_plot(file, header)
         # .save_random(file, header)
       })
     })
