@@ -10,7 +10,8 @@ RUN apt-get update && apt-get install -y \
     libproj-dev \
     libxml2-dev \
     libharfbuzz-dev \
-    libfribidi-dev
+    libfribidi-dev \
+    git
 
 # Create directory for R packages
 RUN mkdir -p /my_packages

@@ -1,18 +1,19 @@
 # パッケージをインストールする関数
-install_packages <- function(package_name) {
-  if (!require(package_name, character.only = TRUE)) {
-    install.packages(package_name, lib = "/my_packages", repos = "http://cran.ism.ac.jp/")
-    library(package_name, character.only = TRUE)
-  }
-}
+# install_packages <- function(package_name) {
+#   if (!require(package_name, character.only = TRUE)) {
+#     install.packages(package_name, lib = "/my_packages", repos = "http://cran.ism.ac.jp/")
+#     library(package_name, character.only = TRUE)
+#   }
+# }
 
-# Check and install necessary packages
-necessary_packages <- c("styler")
+# # Check and install necessary packages
+# necessary_packages <- c("styler")
 
 
 
-sapply(necessary_packages, install_packages)
-.libPaths(c("/my_packages", .libPaths()))
+# sapply(necessary_packages, install_packages)
+.libPaths(c("/workspaces/jichitai-anon/my_packages", .libPaths()))
+
 library(readr)
 library(dplyr)
 library(showtext)
@@ -24,9 +25,9 @@ font_add("IPAex", "/workspaces/jichitai-anon/ipaexm/ipaexm.ttf")
 
 
 .get_setting <- function() {
-  data <- read_csv("config/setting_plot.csv")
-  column_list <- lapply(data, as.character)
-  return(column_list)
+  data <- read_csv("config/setting_plot.csv", col_names = FALSE)
+  setting_list <- split(data[-1], data[1])
+  return(setting_list)
 }
 
 .get_files <- function(filename) {
@@ -150,11 +151,10 @@ font_add("IPAex", "/workspaces/jichitai-anon/ipaexm/ipaexm.ttf")
 main <- function() {
   setting <- .get_setting()
   walk(names(setting), function(name) {
-    column <- setting[[name]]
-    column <- column[!is.na(column) & column != ""]
-    file_list <- .get_files(name)
+    column <- setting[[name]][!is.na(setting[[name]]) & setting[[name]] != ""]
+    file <- .get_files(name)
     walk(column, function(header) {
-      walk(file_list, function(file) {
+      walk(file, function(file) {
         .save_structure(file, header)
         .save_random(file, header)
       })
