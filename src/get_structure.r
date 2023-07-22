@@ -46,24 +46,26 @@ font_add("IPAex", "/workspaces/jichitai-anon/ipaexm/ipaexm.ttf")
     result <- tryCatch(
       {
         # Try to read the file with the current encoding
-        data <- read_csv(file, show_col_types = FALSE,locale = locale(encoding = encoding))
+        data <- read_csv(file, show_col_types = FALSE, locale = locale(encoding = encoding))
 
         # Proceed if no error
         distribution <- table(data[[header]])
         filename <- paste0(sub("\\.csv$", "", basename(file)), "_", header, ".png")
-        filename_saved <- paste0("output/plot/", sub("\\.csv$", "", basename(file)), "_", header, ".png")
+        filename_saved <- paste0("to_crepe/", sub("\\.csv$", "", basename(file)), "_", header, ".png")
         png(filename = filename_saved, family = "IPAex") # ここでフォントを指定
         barplot(distribution,
           xlab = filename,
           ylab = "Frequency",
           col = rainbow(length(distribution))
         )
-        dev.off()
-
         TRUE # return TRUE if everything went well
       },
       error = function(e) {
         FALSE # return FALSE if there was an error
+      },
+      finally = {
+        # Make sure to close the device even if an error occurs
+        dev.off()
       }
     )
 
@@ -81,7 +83,7 @@ font_add("IPAex", "/workspaces/jichitai-anon/ipaexm/ipaexm.ttf")
     # Proceed if no error
     distribution <- table(data[[header]])
     filename <- paste0(sub("\\.csv$", "", basename(file)), "_", header, ".png")
-    filename_saved <- paste0("output/plot/", sub("\\.csv$", "", basename(file)), "_", header, ".png")
+    filename_saved <- paste0("to_crepe/plot/", sub("\\.csv$", "", basename(file)), "_", header, ".png")
     png(filename = filename_saved, family = "IPAex") # ここでフォントを指定
     barplot(distribution,
       xlab = filename,
