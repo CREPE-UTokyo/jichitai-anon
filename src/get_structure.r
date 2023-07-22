@@ -25,7 +25,7 @@ font_add("IPAex", "/workspaces/jichitai-anon/ipaexm/ipaexm.ttf")
 
 
 .get_setting <- function() {
-  data <- read_csv("config/setting_plot.csv", col_names = FALSE)
+  data <- read_csv("config/setting_plot.csv", col_names = FALSE, show_col_types = FALSE)
   setting_list <- split(data[-1], data[1])
   return(setting_list)
 }
@@ -41,9 +41,12 @@ font_add("IPAex", "/workspaces/jichitai-anon/ipaexm/ipaexm.ttf")
     result <- tryCatch(
       {
         # Try to read the file with the current encoding
-        data <- read_csv(file, locale = locale(encoding = encoding))
+        data <- read_csv(file, locale = locale(encoding = encoding), show_col_types = FALSE)
 
         # Proceed if no error
+        # Replace NA with "Missing"
+        data[[header]] <- ifelse(is.na(data[[header]]), "Missing", data[[header]])
+
         distribution <- table(data[[header]])
         filename <- paste0(sub("\\.csv$", "", basename(file)), "_", header, ".png")
         filename_saved <- paste0("output/plot/", sub("\\.csv$", "", basename(file)), "_", header, ".png")
@@ -58,6 +61,8 @@ font_add("IPAex", "/workspaces/jichitai-anon/ipaexm/ipaexm.ttf")
         TRUE # return TRUE if everything went well
       },
       error = function(e) {
+        # Print the error message
+        print(paste0("An error occurred: ", e$message))
         FALSE # return FALSE if there was an error
       }
     )
@@ -70,23 +75,33 @@ font_add("IPAex", "/workspaces/jichitai-anon/ipaexm/ipaexm.ttf")
   if (!result) {
     guessed_encoding <- .guess_file_encofing(file)
 
-    # Try to read the file with the guessed encoding
-    data <- read_csv(file, locale = locale(encoding = guessed_encoding))
+    tryCatch(
+      {
+        # Try to read the file with the guessed encoding
+        data <- read_csv(file, locale = locale(encoding = guessed_encoding), show_col_types = FALSE)
 
-    # Proceed if no error
-    distribution <- table(data[[header]])
-    filename <- paste0(sub("\\.csv$", "", basename(file)), "_", header, ".png")
-    filename_saved <- paste0("output/plot/", sub("\\.csv$", "", basename(file)), "_", header, ".png")
-    png(filename = filename_saved, family = "IPAex") # ここでフォントを指定
-    barplot(distribution,
-      xlab = filename,
-      ylab = "Frequency",
-      col = rainbow(length(distribution))
+        # Proceed if no error
+        # Replace NA with "Missing"
+        data[[header]] <- ifelse(is.na(data[[header]]), "Missing", data[[header]])
+
+        distribution <- table(data[[header]])
+        filename <- paste0(sub("\\.csv$", "", basename(file)), "_", header, ".png")
+        filename_saved <- paste0("output/plot/", sub("\\.csv$", "", basename(file)), "_", header, ".png")
+        png(filename = filename_saved, family = "IPAex") # ここでフォントを指定
+        barplot(distribution,
+          xlab = filename,
+          ylab = "Frequency",
+          col = rainbow(length(distribution))
+        )
+        dev.off()
+      },
+      error = function(e) {
+        # Print the error message
+        print(paste0("An error occurred: ", e$message))
+      }
     )
-    dev.off()
   }
 }
-
 
 
 # 精度が低いので使いたくない
@@ -105,10 +120,12 @@ font_add("IPAex", "/workspaces/jichitai-anon/ipaexm/ipaexm.ttf")
     result <- tryCatch(
       {
         # Try to read the file with the current encoding
-        data <- read_csv(filename, locale = locale(encoding = encoding))
+        data <- read_csv(filename, locale = locale(encoding = encoding), show_col_types = FALSE)
         TRUE # return TRUE if everything went well
       },
       error = function(e) {
+        # Print the error message
+        print(paste0("An error occurred: ", e$message))
         FALSE # return FALSE if there was an error
       }
     )
@@ -119,7 +136,16 @@ font_add("IPAex", "/workspaces/jichitai-anon/ipaexm/ipaexm.ttf")
   # If none of the encodings worked, guess the encoding
   if (!result) {
     guessed_encoding <- .guess_file_encofing(filename)
-    data <- read_csv(filename, locale = locale(encoding = guessed_encoding))
+
+    tryCatch(
+      {
+        data <- read_csv(filename, locale = locale(encoding = guessed_encoding), show_col_types = FALSE)
+      },
+      error = function(e) {
+        # Print the error message
+        print(paste0("An error occurred: ", e$message))
+      }
+    )
   }
 
   # Get a random sample of 100 rows or less
@@ -133,7 +159,16 @@ font_add("IPAex", "/workspaces/jichitai-anon/ipaexm/ipaexm.ttf")
   # Check if the file already exists
   if (file.exists(filename_saved)) {
     # If the file exists, read it
-    existing_data <- read_csv(filename_saved)
+    existing_data <- tryCatch(
+      {
+        read_csv(filename_saved, show_col_types = FALSE)
+      },
+      error = function(e) {
+        # Print the error message
+        print(paste0("An error occurred: ", e$message))
+        NULL
+      }
+    )
     # Add the new column to the existing data
     existing_data[[header]] <- data[[header]]
     # Write the updated data back to the file
@@ -147,7 +182,6 @@ font_add("IPAex", "/workspaces/jichitai-anon/ipaexm/ipaexm.ttf")
 }
 
 
-
 main <- function() {
   setting <- .get_setting()
   walk(names(setting), function(name) {
@@ -156,7 +190,7 @@ main <- function() {
     walk(column, function(header) {
       walk(file, function(file) {
         .save_structure(file, header)
-        .save_random(file, header)
+        # .save_random(file, header)
       })
     })
   })
