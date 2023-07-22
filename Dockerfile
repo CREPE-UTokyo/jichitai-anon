@@ -13,8 +13,7 @@ RUN apt-get update && apt-get install -y \
     libfribidi-dev \
     git
 
-# Create directory for R packages
-RUN mkdir -p /my_packages
+COPY my_packages /my_packages
 
 # Change the ownership of the directory to the 'staff' group which the R user is a part of
 RUN chown :staff /my_packages

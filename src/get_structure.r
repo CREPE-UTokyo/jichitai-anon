@@ -1,23 +1,22 @@
 # パッケージをインストールする関数
-install_packages <- function(package_name) {
-  if (!require(package_name, character.only = TRUE)) {
-    install.packages(package_name, lib = "/my_packages", repos = "http://cran.ism.ac.jp/")
-    library(package_name, character.only = TRUE)
-  }
-}
+# install_packages <- function(package_name) {
+#   if (!require(package_name, character.only = TRUE)) {
+#     install.packages(package_name, lib = "/my_packages", repos = "http://cran.ism.ac.jp/")
+#     library(package_name, character.only = TRUE)
+#   }
+# }
 
-# Check and install necessary packages
-necessary_packages <- c("styler")
+# # Check and install necessary packages
+# necessary_packages <- c("styler")
 
 
 
-sapply(necessary_packages, install_packages)
+# sapply(necessary_packages, install_packages)
 .libPaths(c("/my_packages", .libPaths()))
 library(readr)
 library(dplyr)
 library(showtext)
 library(purrr)
-library(styler)
 showtext_auto()
 font_add("IPAex", "/workspaces/jichitai-anon/ipaexm/ipaexm.ttf")
 
@@ -156,7 +155,7 @@ main <- function() {
     walk(column, function(header) {
       walk(file_list, function(file) {
         .save_structure(file, header)
-        .save_random(file, header)
+        # .save_random(file, header)
       })
     })
   })
