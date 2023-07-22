@@ -49,7 +49,7 @@ font_add("IPAex", "/workspaces/jichitai-anon/ipaexm/ipaexm.ttf")
         data <- read_csv(file, show_col_types = FALSE, locale = locale(encoding = encoding))
 
         # Proceed if no error
-        distribution <- table(data[[header]])
+        distribution <- table(data[[header]], useNA = "ifany")  # Add 'useNA = "ifany"' to count NA frequencies
         filename <- paste0(sub("\\.csv$", "", basename(file)), "_", header, ".png")
         filename_saved <- paste0("to_crepe/", sub("\\.csv$", "", basename(file)), "_", header, ".png")
         png(filename = filename_saved, family = "IPAex") # ここでフォントを指定
@@ -81,7 +81,7 @@ font_add("IPAex", "/workspaces/jichitai-anon/ipaexm/ipaexm.ttf")
     data <- read_csv(file, locale = locale(encoding = guessed_encoding), show_col_types = FALSE)
 
     # Proceed if no error
-    distribution <- table(data[[header]])
+    distribution <- table(data[[header]], useNA = "ifany")  # Add 'useNA = "ifany"' to count NA frequencies
     filename <- paste0(sub("\\.csv$", "", basename(file)), "_", header, ".png")
     filename_saved <- paste0("to_crepe/plot/", sub("\\.csv$", "", basename(file)), "_", header, ".png")
     png(filename = filename_saved, family = "IPAex") # ここでフォントを指定
@@ -93,6 +93,7 @@ font_add("IPAex", "/workspaces/jichitai-anon/ipaexm/ipaexm.ttf")
     dev.off()
   }
 }
+
 
 
 
