@@ -23,10 +23,17 @@ font_add("IPAex", "/workspaces/jichitai-anon/ipaexm/ipaexm.ttf")
 
 
 .get_setting <- function() {
-  data <- read_csv("config/setting_plot.csv", show_col_types = FALSE)
-  column_list <- lapply(data, as.character)
-  return(column_list)
+  data <- read.csv("config/setting_plot.csv", header = FALSE, stringsAsFactors = FALSE)
+  result_list <- list()
+  for (i in 1:nrow(data)) {
+    clean_data <- na.omit(data[i,])
+    clean_data <- clean_data[clean_data != ""]
+    result_list[[data[i, 1]]] <- clean_data[-1]
+  }
+  
+  return(result_list)
 }
+
 
 .get_files <- function(filename) {
   file_list <- list.files(path = "data", pattern = paste0("^", filename, ".*\\.csv$"), full.names = TRUE)
@@ -39,7 +46,7 @@ font_add("IPAex", "/workspaces/jichitai-anon/ipaexm/ipaexm.ttf")
     result <- tryCatch(
       {
         # Try to read the file with the current encoding
-        data <- read_csv(file, locale = locale(encoding = encoding), show_col_types = FALSE)
+        data <- read_csv(file, show_col_types = FALSE,locale = locale(encoding = encoding))
 
         # Proceed if no error
         distribution <- table(data[[header]])
@@ -69,7 +76,7 @@ font_add("IPAex", "/workspaces/jichitai-anon/ipaexm/ipaexm.ttf")
     guessed_encoding <- .guess_file_encofing(file)
 
     # Try to read the file with the guessed encoding
-    data <- read_csv(file, locale = locale(encoding = guessed_encoding, show_col_types = FALSE))
+    data <- read_csv(file, locale = locale(encoding = guessed_encoding), show_col_types = FALSE)
 
     # Proceed if no error
     distribution <- table(data[[header]])
