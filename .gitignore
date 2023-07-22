@@ -4,3 +4,5 @@ my_packages/
 data/
 output/
 config/
+.ds_store
+```
