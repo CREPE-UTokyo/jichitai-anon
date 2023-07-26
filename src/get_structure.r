@@ -51,7 +51,7 @@ font_add("IPAex", "/workspaces/jichitai-anon/ipaexm/ipaexm.ttf")
         # Proceed if no error
         distribution <- table(data[[header]], useNA = "ifany")  # Add 'useNA = "ifany"' to count NA frequencies
         filename <- paste0(sub("\\.csv$", "", basename(file)), "_", header, ".png")
-        filename_saved <- paste0("to_crepe/", sub("\\.csv$", "", basename(file)), "_", header, ".png")
+        filename_saved <- paste0("to_crepe/plot/", sub("\\.csv$", "", basename(file)), "_", header, ".png")
         png(filename = filename_saved, family = "IPAex") # ここでフォントを指定
         barplot(distribution,
           xlab = filename,
@@ -94,15 +94,63 @@ font_add("IPAex", "/workspaces/jichitai-anon/ipaexm/ipaexm.ttf")
   }
 }
 
-
-
-
-# 精度が低いので使いたくない
-.guess_file_encofing <- function(filename) {
-  # ファイルのエンコーディングを推測
+.guess_file_encoding <- function(filename) {
   guess <- guess_encoding(filename, n_max = 1000)
-  # エンコーディングを返す
-  return(guess$encoding[1]) # encodingの最初の推測を返す
+  return(guess$encoding[1]) # return the first guess of encoding
+}
+
+.create_random_sample <- function(input_file, num_samples = 100) {
+  encoding_list <- c("UTF-8", "Shift-JIS")
+  for (encoding in encoding_list) {
+    result <- tryCatch(
+      {
+        # Try to read the file with the current encoding
+        df <- read_csv(input_file, locale = locale(encoding = encoding)) 
+        
+        # Create a list to store the samples
+        sample_list <- list()
+        
+        # Generate samples for each column and add them to the list
+        for (col in names(df)) {
+          sample_list[[col]] <- sample(df[[col]], num_samples, replace = TRUE)
+        }
+
+        # Convert the list to a data frame
+        random_sample_df <- data.frame(sample_list)
+        
+        output_file <- paste0("to_crepe/random/", sub("\\.csv$", "", basename(input_file)), "_random.csv")
+        write_csv(random_sample_df, output_file) 
+        TRUE # return TRUE if everything went well
+      },
+      error = function(e) {
+        FALSE # return FALSE if there was an error
+      }
+    )
+
+    # If there was no error, exit the loop
+    if (result) break
+  }
+
+  # If none of the encodings worked, guess the encoding
+  if (!result) {
+    guessed_encoding <- .guess_file_encoding(input_file)
+
+    df <- read_csv(input_file, locale = locale(encoding = guessed_encoding)) 
+    
+    # Create a list to store the samples
+    sample_list <- list()
+    
+    # Generate samples for each column and add them to the list
+    for (col in names(df)) {
+      sample_list[[col]] <- sample(df[[col]], num_samples, replace = TRUE)
+    }
+
+    # Convert the list to a data frame
+    random_sample_df <- data.frame(sample_list)
+    
+    output_file <- paste0("to_crepe/random/", sub("\\.csv$", "", basename(input_file)), "_random.csv")
+    write_csv(random_sample_df, output_file) 
+  }
 }
 
 
@@ -164,8 +212,8 @@ main <- function() {
     file_list <- .get_files(name)
     walk(column, function(header) {
       walk(file_list, function(file) {
-        .save_plot(file, header)
-        # .save_random(file, header)
+        # .save_plot(file, header)
+        .create_random_sample(file)
       })
     })
   })
