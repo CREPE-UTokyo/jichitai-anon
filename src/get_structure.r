@@ -19,7 +19,7 @@ library(showtext)
 library(purrr)
 showtext_auto()
 font_add("IPAex", "/workspaces/jichitai-anon/ipaexm/ipaexm.ttf")
-
+ 
 
 
 .get_setting <- function() {
@@ -96,7 +96,7 @@ font_add("IPAex", "/workspaces/jichitai-anon/ipaexm/ipaexm.ttf")
 
 .guess_file_encoding <- function(filename) {
   guess <- guess_encoding(filename, n_max = 1000)
-  return(guess$encoding[1]) # return the first guess of encoding
+  return(paste0(guess$encoding, ":", guess$confidence))
 }
 
 .create_random_sample <- function(input_file, num_samples = 100) {
