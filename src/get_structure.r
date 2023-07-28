@@ -72,7 +72,7 @@ font_add("IPAex", "/workspaces/jichitai-anon/ipaexm/ipaexm.ttf")
 }
 
 
-.create_random_sample <- function(input_file, num_samples = 1000) {
+.create_random_sample <- function(input_file, num_samples = 10) {
   encoding <- "UTF-8"
   result <- tryCatch(
     {
@@ -103,7 +103,7 @@ main <- function() {
     walk(column, function(header) {
       walk(file_list, function(file) {
         .save_plot(file, header)
-        # .create_random_sample(file)
+        .create_random_sample(file)
       })
     })
   })
