@@ -4,6 +4,7 @@ library(dplyr)
 library(purrr)
 library(stringr)
 library(openssl)
+library(lubridate)
 
 .get_value_from_setting <- function(file_name, key){
   if (!file.exists(file_name)) {
@@ -44,7 +45,7 @@ library(openssl)
   }
 }
 
-.get_target_columns <- function(target_file, category_arg) {
+.get_target_category <- function(target_file, category_arg) {
   data <- read_csv( "config/setting_anon_classification.csv", show_col_types = FALSE, locale = locale(encoding = "UTF-8"))
   output <- list()
   items <- data %>%
@@ -54,12 +55,24 @@ library(openssl)
   return(output)
 }
 
+.get_target_format <- function(target_file) {
+  classification = "config/setting_anon_classification.csv"
+  data <- read_csv(classification, show_col_types = FALSE, locale = locale(encoding = "UTF-8"))
+  birth_format <- data %>%
+    filter(file_name == target_file, category == "birth") %>%
+    pull(format)
+  return(birth_format)
+}
+
+
 .get_target_file_name <- function() {
-  file_name = "config/setting_anon_classification.csv"
-  data <- read_csv(file_name, show_col_types = FALSE, locale = locale(encoding = "UTF-8"))
+  classification = "config/setting_anon_classification.csv"
+  data <- read_csv(classification, show_col_types = FALSE, locale = locale(encoding = "UTF-8"))
   unique_data <- unique(data$file_name)
   return(unique_data)
 }
+
+
 
 
 .apply_hash <- function(file_name, target_columns, password1, password2) {
@@ -98,18 +111,35 @@ library(openssl)
   return(years)
 }
 
-.apply_month <- function(data) {
-  
+# TODO: 生年月日の処理.和暦使ってる場合は更に処理が必要
+.apply_month <- function(data, target_file) {
+  category_birth = c("birth")
+  birth_columns = .get_target_category(target_file, category_birth)
+  format_columns = .get_target_format(target_file)
+  for (col in birth_columns) {
+    if (col %in% colnames(data)) {
+      data[[col]] <- as.Date(data[[col]], format_columns) 
+      data[[col]] <- format(data[[col]], "%Y/%m")
+      print(data[[col]])
+    }
+  }
+  return(data) 
 }
 
-.save_simple_anon <- function(target_file, year, target_columns, password1, password2) {
+
+
+
+.save_simple_anon <- function(target_file, year, password1, password2) {
+  category_hash = c("atena", "setai")
+  hashed_columns = .get_target_category(target_file, category_hash)
   hashed_data <- .apply_hash(
     file_name = paste0("to_crepe/random/", target_file, "_", year, "_random.csv"),
-    target_column = target_columns,
+    target_column = hashed_columns,
     password1 = password1,
     password2 = password2
   )
-  write_csv(hashed_data, paste0("to_crepe/random/hashed/", target_file, "_", year, "_random_hashed.csv"))
+  simple_data = .apply_month(hashed_data, target_file)
+  return(simple_data)
 }
 
 
@@ -129,11 +159,10 @@ main <- function() {
   target_files <- .get_target_file_name()
 
   for (target_file in target_files) {
-    category_hash = c("atena", "setai")
-    hashed_columns = .get_target_columns(target_file, category_hash)
     years = .get_target_file_year(target_file)
     for (year in years) {
-      .save_simple_anon(target_file, year, hashed_columns, password1, password2)
+      simple_anon = .save_simple_anon(target_file, year, password1, password2)
+      write_csv(simple_anon, paste0("to_crepe/random/hashed/", target_file, "_", year, "_random_hashed.csv"))
     }   
   }
 }
