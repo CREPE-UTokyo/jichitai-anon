@@ -9,7 +9,6 @@ library(stringr)
     stop(paste0("File does not exist: ", file_name))
   }
   data <- read_csv(file_name, show_col_types = FALSE, locale = locale(encoding = "UTF-8"))
-  key <- "住民基本台帳"
   if (!(key %in% data$setting)) {
     stop(paste0("Key does not exist: ", key))
   }
@@ -23,7 +22,7 @@ library(stringr)
 
 
 .get_merged_file <- function(jyuki) {
-  data_dir <- "/workspaces/jichitai-anon/data"
+  data_dir <- "data"
   output_prefix <- "combined/"
   files <- list.files(path = data_dir, pattern = "*.csv", full.names = TRUE)
   jyuki_files <- grep(jyuki, files, value = TRUE)
@@ -47,13 +46,21 @@ library(stringr)
   }
 }
 
+
 main <- function() {
   jyuki <- .get_value_from_setting(
     file_name = "config/setting_anon.csv",
     key = "住民基本台帳"
   )
-  print(jyuki)
-  # .get_merged_file(jyuki)
+  password1 <- .get_value_from_setting(
+    file_name = "config/setting_anon_password.csv",
+    key = "password1"
+  )
+  password2 <- .get_value_from_setting(
+    file_name = "config/setting_anon_password.csv",
+    key = "password2"
+  )
+  .get_merged_file(jyuki)
 }
 
 main()
