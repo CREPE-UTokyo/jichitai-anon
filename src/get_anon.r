@@ -44,7 +44,7 @@ library(openssl)
   }
 }
 
-.get_hash_target_columns <- function(target_file, category_arg) {
+.get_target_columns <- function(target_file, category_arg) {
   data <- read_csv( "config/setting_anon_classification.csv", show_col_types = FALSE, locale = locale(encoding = "UTF-8"))
   output <- list()
   items <- data %>%
@@ -98,6 +98,9 @@ library(openssl)
   return(years)
 }
 
+.apply_month <- function(data) {
+  
+}
 
 .save_simple_anon <- function(target_file, year, target_columns, password1, password2) {
   hashed_data <- .apply_hash(
@@ -126,11 +129,11 @@ main <- function() {
   target_files <- .get_target_file_name()
 
   for (target_file in target_files) {
-    category_arg = c("atena", "setai")
-    target_columns = .get_hash_target_columns(target_file, category_arg)
+    category_hash = c("atena", "setai")
+    hashed_columns = .get_target_columns(target_file, category_hash)
     years = .get_target_file_year(target_file)
     for (year in years) {
-      .save_simple_anon(target_file, year, target_columns, password1, password2)
+      .save_simple_anon(target_file, year, hashed_columns, password1, password2)
     }   
   }
 }
