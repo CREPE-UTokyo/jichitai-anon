@@ -120,7 +120,6 @@ library(lubridate)
     if (col %in% colnames(data)) {
       data[[col]] <- as.Date(data[[col]], format_columns) 
       data[[col]] <- format(data[[col]], "%Y/%m")
-      print(data[[col]])
     }
   }
   return(data) 
@@ -162,7 +161,7 @@ main <- function() {
     years = .get_target_file_year(target_file)
     for (year in years) {
       simple_anon = .save_simple_anon(target_file, year, password1, password2)
-      write_csv(simple_anon, paste0("to_crepe/random/hashed/", target_file, "_", year, "_random_hashed.csv"))
+      write_csv(simple_anon, paste0("to_crepe/hashed/", target_file, "_", year, ".csv"))
     }   
   }
 }
