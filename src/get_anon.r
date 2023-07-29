@@ -141,8 +141,7 @@ library(lubridate)
   return(simple_data)
 }
 
-
-main <- function() {
+.get_settings <- function() {
   jyuki <- .get_value_from_setting(
     file_name = "config/setting_anon.csv",
     key = "住民基本台帳"
@@ -155,13 +154,48 @@ main <- function() {
     file_name = "config/setting_anon_password.csv",
     key = "password2"
   )
-  target_files <- .get_target_file_name()
+  top_coding <- .get_value_from_setting(
+    file_name = "config/setting_anon.csv",
+    key = "トップコーディング"
+  )
+  k_anon <- .get_value_from_setting(
+    file_name = "config/setting_anon.csv",
+    key = "k匿名化"
+  )
+  random_sample <- .get_value_from_setting(
+      file_name = "config/setting_anon.csv",
+      key = "ランダムサンプリング"
+    )
+  tokui <- .get_value_from_setting(
+    file_name = "config/setting_anon.csv",
+    key = "特異世帯"
+  )
+  koudo <- .get_value_from_setting(
+    file_name = "config/setting_anon.csv",
+    key = "高度な匿名化"
+  )
 
+  return(list(
+    jyuki = jyuki,
+    password1 = password1,
+    password2 = password2,
+    top_coding = top_coding,
+    k_anon = k_anon,
+    random_sample = random_sample,
+    tokui = tokui,
+    koudo = koudo
+  ))
+}
+
+main <- function() {
+  settings <- .get_settings()
+  target_files <- .get_target_file_name()
   for (target_file in target_files) {
     years = .get_target_file_year(target_file)
     for (year in years) {
-      simple_anon = .save_simple_anon(target_file, year, password1, password2)
-      write_csv(simple_anon, paste0("to_crepe/hashed/", target_file, "_", year, ".csv"))
+      simple_anon = .save_simple_anon(target_file, year, settings$password1, settings$password2)
+      write_csv(simple_anon, paste0("to_crepe/anonymized/", target_file, "_", year, ".csv"))
+      print(paste0("Saved: ", target_file, "_", year, ".csv"))
     }   
   }
 }
