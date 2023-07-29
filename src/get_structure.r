@@ -102,7 +102,7 @@ main <- function() {
     file_list <- .get_files(name)
     walk(column, function(header) {
       walk(file_list, function(file) {
-        .save_plot(file, header)
+        # .save_plot(file, header)
         .create_random_sample(file)
       })
     })
