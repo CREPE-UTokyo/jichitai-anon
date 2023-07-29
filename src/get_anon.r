@@ -2,71 +2,58 @@
 library(readr)
 library(dplyr)
 library(purrr)
+library(stringr)
 
-
-.merge_file <- function(){
-  file_name <- "config/setting_anon.csv"
-  data <- read_csv(file_name, show_col_types = FALSE, col_names = FALSE, locale = locale(encoding = "UTF-8"))
+.get_value_from_setting <- function(file_name, key){
+  if (!file.exists(file_name)) {
+    stop(paste0("File does not exist: ", file_name))
+  }
+  data <- read_csv(file_name, show_col_types = FALSE, locale = locale(encoding = "UTF-8"))
   key <- "住民基本台帳"
-  result <- data[data$X1 == key,"X2"]
-  
+  if (!(key %in% data$setting)) {
+    stop(paste0("Key does not exist: ", key))
+  }
+  result <- data[data$setting == key, "value"]
+  if (is.na(result)) {
+    stop(paste0("No corresponding value for key: ", key))
+  }
   return(result)
 }
 
-.get_files <- function(filename) {
-  file_list <- list.files(path = "data", pattern = paste0("^", filename, ".*\\.csv$"), full.names = TRUE)
-}
 
-.get_merge_file <- function(year){
-  base_file <- paste0("to_crepe/random/jyuki_", year, "_random.csv")
-  df_base <- read_csv(base_file, show_col_types = FALSE, col_names = TRUE, locale = locale(encoding = "UTF-8"))
-  base_column_names <- colnames(df_base)
-  files_to_merge <- c("allkazei", "fuka1", "fuka2", "kokuzei") %>% 
-    map_chr(~paste0("to_crepe/random/", ., "_", year, "_random.csv"))
-  for(file in files_to_merge){
-    df_temp <- read_csv(file, show_col_types = FALSE, col_names = TRUE, locale = locale(encoding = "UTF-8"))
-    print(paste0("Columns in '", file, "':"))
-    print(colnames(df_temp))  # Print column names of df_temp
-    if (!"宛名番号" %in% colnames(df_temp)) {
-      stop(paste0("File '", file, "' does not contain the merge key column '宛名番号'."))
+
+.get_merged_file <- function(jyuki) {
+  data_dir <- "/workspaces/jichitai-anon/data"
+  output_prefix <- "combined/"
+  files <- list.files(path = data_dir, pattern = "*.csv", full.names = TRUE)
+  jyuki_files <- grep(jyuki, files, value = TRUE)
+  other_files <- setdiff(files, jyuki_files)
+  for (jyuki_file in jyuki_files) {
+    jyuki_data <- read_csv(jyuki_file, show_col_types = FALSE)
+    year <- str_extract(jyuki_file, "\\d+")
+    for (other_file in other_files) {
+      file_type <- str_extract(other_file, "(?<=/)[^_/]+(?=_)")
+      if (str_detect(other_file, year)) {
+        other_data <- read_csv(other_file, show_col_types = FALSE)
+        common_names <- intersect(names(jyuki_data), names(other_data))
+        common_names <- setdiff(common_names, "宛名番号")
+        other_data <- other_data %>% select(-one_of(common_names))
+        combined_data <- left_join(jyuki_data, other_data, by = "宛名番号")
+        output_file <- paste0(data_dir, "/", output_prefix, file_type, "_", year, ".csv")
+        write_csv(combined_data, output_file)
+        print(paste0("Saved: ", output_file))
+      }
     }
-    temp_column_names <- colnames(df_temp)
-    duplicate_column_names <- base_column_names[base_column_names %in% temp_column_names]
-    duplicate_column_names <- duplicate_column_names[duplicate_column_names != "宛名番号"]
-    df_temp <- df_temp[, !colnames(df_temp) %in% duplicate_column_names, drop=FALSE]
-    df_base <- left_join(df_base, df_temp, by = "宛名番号")
-    print(paste0("Processing file: ", file))
-    print("Columns in df_temp after removing duplicates:")
-    print(colnames(df_temp))
   }
-  return(df_base)
 }
 
-# result <- .get_merge_file(2022)
-# write.csv(result, "to_crepe/merged/merged_data_2022.csv", row.names = FALSE)
-
-.top_coding <- function(){
-  data <- read.csv("to_crepe/random/kokuzei_2022_random.csv")
-  data$decade <- floor(data$年齢.1.1./10)*10
-  top_coding_threshold <- data %>%
-    group_by(decade) %>%
-    summarise(threshold = quantile(税額合計, 0.5, na.rm = TRUE))
-  new_data <- data %>%
-    left_join(top_coding_threshold, by = "decade") %>%
-    mutate(new_税額合計 = ifelse(税額合計 > threshold, threshold, 税額合計))
-  write.csv(new_data, "to_crepe/top_coded/top_coded_kokuzei_2022.csv", row.names = FALSE)
-  print("Done!")
+main <- function() {
+  jyuki <- .get_value_from_setting(
+    file_name = "config/setting_anon.csv",
+    key = "住民基本台帳"
+  )
+  print(jyuki)
+  # .get_merged_file(jyuki)
 }
 
-.top_coding() 
-
-
-
-# main <- function() {
-#   result <- merge_file()
-#   files <- .get_files(result)
-#   print(files)
-# }
-
-
-# main()
+main()
