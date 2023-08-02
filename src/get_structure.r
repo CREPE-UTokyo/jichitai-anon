@@ -17,6 +17,7 @@ library(readr)
 library(dplyr)
 library(showtext)
 library(purrr)
+library(crayon)
 showtext_auto()
 font_add("IPAex", "/workspaces/jichitai-anon/ipaexm/ipaexm.ttf")
  
@@ -46,7 +47,6 @@ font_add("IPAex", "/workspaces/jichitai-anon/ipaexm/ipaexm.ttf")
 
 .save_plot <- function(file, header) {
   encoding <- "UTF-8"
-  print(paste0("Processing  with encoding ", encoding))
   result <- tryCatch(
     {
       data <- read_csv(file, show_col_types = FALSE, locale = locale(encoding = encoding))
@@ -60,8 +60,10 @@ font_add("IPAex", "/workspaces/jichitai-anon/ipaexm/ipaexm.ttf")
         col = rainbow(length(distribution))
       )
       TRUE # return TRUE if everything went well
+      print(paste0("Created ", filename_saved))
     },
     error = function(e) {
+      print(paste0("Error: ", e))
       FALSE # return FALSE if there was an error
     },
     finally = {
@@ -72,7 +74,7 @@ font_add("IPAex", "/workspaces/jichitai-anon/ipaexm/ipaexm.ttf")
 }
 
 
-.create_random_sample <- function(input_file, num_samples = 10) {
+.create_random_sample <- function(input_file, num_samples = 1000) {
   encoding <- "UTF-8"
   result <- tryCatch(
     {
@@ -85,6 +87,7 @@ font_add("IPAex", "/workspaces/jichitai-anon/ipaexm/ipaexm.ttf")
       output_file <- paste0("to_crepe/random/", sub("\\.csv$", "", basename(input_file)), "_random.csv")
       write_csv(random_sample_df, output_file) 
       TRUE # return TRUE if everything went well
+      print(paste0("Created ", output_file))
     },
     error = function(e) {
       FALSE # return FALSE if there was an error
@@ -92,9 +95,21 @@ font_add("IPAex", "/workspaces/jichitai-anon/ipaexm/ipaexm.ttf")
   )
 }
 
+.handle_warnings <- function(w) {
+  lapply(w$warnings, function(x) {
+    msg <- conditionMessage(x)
+    print(msg)
+    writeLines(paste(Sys.time(), msg), "warnings.log")
+    invokeRestart("muffleWarning")
+    warning("This is a test warning")
+  })
+}
+
+
 
 
 main <- function() {
+  options(warning.expression = quote(.handle_warnings(last.warning)))
   setting <- .get_setting()
   walk(names(setting), function(name) {
     column <- setting[[name]]
@@ -102,11 +117,16 @@ main <- function() {
     file_list <- .get_files(name)
     walk(column, function(header) {
       walk(file_list, function(file) {
-        # .save_plot(file, header)
+        .save_plot(file, header)
         .create_random_sample(file)
       })
     })
   })
+
+  options(warning.expression = NULL)
+  cat(green("**************************************************\n"))
+  cat(green("********* All tasks completed successfully! *********\n"))
+  cat(green("**************************************************\n"))
 }
 
 main()
