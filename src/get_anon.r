@@ -73,8 +73,6 @@ library(lubridate)
 }
 
 
-
-
 .apply_hash <- function(file_name, target_columns, password1, password2) {
   if (!file.exists(file_name)) {
     stop(paste0("File does not exist: ", file_name))
@@ -125,10 +123,8 @@ library(lubridate)
   return(data) 
 }
 
-
-
-
 .save_simple_anon <- function(target_file, year, password1, password2) {
+  # TODO: ハッシュ化したいカラムを＋で指定できる
   category_hash = c("atena", "setai")
   hashed_columns = .get_target_category(target_file, category_hash)
   hashed_data <- .apply_hash(
@@ -140,6 +136,29 @@ library(lubridate)
   simple_data = .apply_month(hashed_data, target_file)
   return(simple_data)
 }
+
+
+.apply_top_coding <- function(data) {
+  category_hash = c("setai")
+  hashed_columns = .get_target_category(target_file, category_hash)
+  print(hashed_columns)
+}
+
+
+# .apply_tokui <- function(data, target_file) {
+#   category_hash = c("setai")
+#   setai_columns = .get_target_category(target_file, category_hash)
+#   for (setai_col in setai_columns) {
+#     print(setai_col)
+#     if (setai_col %in% colnames(data)) {
+#       freq_table <- table(data[[setai_col]])
+#       freq_10_over <- names(freq_table[freq_table >= 10])
+#       data[[setai_col]] <- ifelse(data[[setai_col]] %in% freq_10_over, "same_value", data[[setai_col]])
+#     }
+#   }
+#   return(data)
+# }
+
 
 .get_settings <- function() {
   jyuki <- .get_value_from_setting(
@@ -194,6 +213,26 @@ main <- function() {
     years = .get_target_file_year(target_file)
     for (year in years) {
       simple_anon = .save_simple_anon(target_file, year, settings$password1, settings$password2)
+      # if (settings$jyuki != target_file) {
+      #   print("Need merge")
+      # }
+      
+      # if (settings$tokui == "1") {
+      #   .apply_tokui(simple_anon, target_file)
+      # }
+      # if (settings$top_coding == "1") {
+      #   .apply_top_coding(simple_anon)
+      #   print("Top coding")
+      # }
+      # if (settings$k_anon == "1") {
+      #   print("k-anonymity")
+      # }
+      # if (settings$random_sample == "1") {
+      #   print("Random sampling")
+      # }
+      # if (settings$koudo == "1") {
+      #   print("Koudo")
+      # }
       write_csv(simple_anon, paste0("to_crepe/anonymized/", target_file, "_", year, ".csv"))
       print(paste0("Saved: ", target_file, "_", year, ".csv"))
     }   
